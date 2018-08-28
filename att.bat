@@ -16,6 +16,7 @@ IF [%1]==[] (
 	SET source_dir=%att_dir%\source
 	SET output_dir=%att_dir%\output
 	SET ext-tools_dir=%att_dir%\ext-tools
+	IF NOT EXIST !source_dir! MKDIR !source_dir!
 	GOTO MENU
 ) ELSE (
 	SET mode=linestyle
@@ -95,8 +96,6 @@ for %%i in (*.apk) do (
 )
 if "%num%"=="0" (
 	ECHO [ATT] No target file...
-	set /p str=[ATT] Press any key.
-	ECHO !str!
 	GOTO END
 )
 ECHO.
