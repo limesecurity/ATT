@@ -187,6 +187,7 @@ IF exist "%output_dir%\%targetapk%\" (
 	)
 )
 java -jar "%ext-tools_dir%\apktool\apktool.jar" d "%source_dir%"\%targetapk% -o "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\
+if errorlevel 1 goto ERROR1
 ECHO.
 ECHO [ATT] Output directory is :
 ECHO       %output_dir%\%targetapk%\
@@ -209,6 +210,7 @@ IF exist "%output_dir%\%targetapk%\" (
 	)
 )
 java -jar "%ext-tools_dir%\apktool\apktool.jar" d "%source_dir%"\%targetapk% -r -o "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\
+if errorlevel 1 goto ERROR1
 ECHO.
 ECHO [ATT] Output directory is :
 ECHO       %output_dir%\%targetapk%\
@@ -219,6 +221,7 @@ GOTO END
 :BUILD
 REM ///////////////////////// BUILD //////////////////////////////////
 java -jar "%ext-tools_dir%\apktool\apktool.jar" b "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ --force
+if errorlevel 1 goto ERROR1
 ECHO.
 ECHO [ATT] APK file saved to :
 ECHO       %output_dir%\%targetapk%\dist\%targetapk%
@@ -231,6 +234,7 @@ ECHO.
 IF EXIST "%output_dir%\%targetapk%\dist\%targetapk%" (
 	ECHO [ATT] Signing... Please wait.
 	java -jar "%ext-tools_dir%\signapk\signapk.jar" "%ext-tools_dir%\signapk\certificate.pem" "%ext-tools_dir%\signapk\key.pk8" "%output_dir%"\%targetapk%\dist\%targetapk% "%output_dir%"\%targetapk%\dist\signed-%targetapk%
+	if errorlevel 1 goto ERROR1
 	ECHO [ATT] Signed file saved to :
 	ECHO       %output_dir%\%targetapk%\dist\signed-%targetapk%
 	GOTO END
@@ -256,6 +260,7 @@ IF EXIST "%output_dir%\%targetapk%\java\%targetapk%.jar" (
 ) ELSE (
 	if exist "%output_dir%"\%targetapk%\build\apk\classes.dex (
 		CALL "%ext-tools_dir%\dex2jar-2.0\d2j-dex2jar.bat" "%output_dir%"\%targetapk%\build\apk\classes.dex --force
+		if errorlevel 1 goto ERROR1
 		mkdir "%output_dir%"\%targetapk%\java"
 		move classes-dex2jar.jar "%output_dir%"\%targetapk%\java\%targetapk%.jar
 		"%ext-tools_dir%\jd-gui\jd-gui.exe" "%output_dir%"\%targetapk%\java\%targetapk%.jar
@@ -264,6 +269,7 @@ IF EXIST "%output_dir%\%targetapk%\java\%targetapk%.jar" (
 		SET /p str=[ATT] Do you want build apk?[y/n]: 
 		IF !str!==y (
 			java -jar "%ext-tools_dir%\apktool\apktool.jar" b "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ --force
+			if errorlevel 1 goto ERROR1
 			GOTO JAVA_SOURCE
 		) ELSE (
 			GOTO END
@@ -308,6 +314,10 @@ ECHO     Use project name as target (=name of source apk file)
 GOTO END
 
 
+:ERROR1
+ECHO.
+ECHO [ATT] Error occured...
+
 :END
 IF %mode%==menustyle (
 	ECHO.
@@ -316,6 +326,7 @@ IF %mode%==menustyle (
 	GOTO MENU
 )
 IF %mode%==linestyle GOTO QUIT
+
 
 :QUIT
 SET str=
