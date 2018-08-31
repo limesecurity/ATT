@@ -148,7 +148,7 @@ IF %str% gtr %num% (
 )
 SET ori_apk=!pfile[%str%]!
 SET new_apk=!pname[%str%]!.apk
-%ext-tools_dir%\sdk-tools\adb pull %ori_apk% "%source_dir%\%new_apk%"
+"%ext-tools_dir%\sdk-tools\adb" pull %ori_apk% "%source_dir%\%new_apk%"
 ECHO [ATT] Saved as: %source_dir%\%new_apk%
 
 :PKG_END
@@ -273,7 +273,7 @@ GOTO END
 
 
 :ADB_CONNECT_TEST
-adb shell pwd 1>null
+"%ext-tools_dir%\sdk-tools\adb" shell pwd 1>null
 IF errorlevel 1 (
 	ECHO [ATT] Can't connect device.
 ) else (
@@ -281,7 +281,7 @@ IF errorlevel 1 (
 )
 SET /p str=[ATT] Do you want trying 'adb kill-server'?[y/n]: 
 IF %str%==y (
-	adb kill-server
+	"%ext-tools_dir%\sdk-tools\adb" kill-server
 	GOTO ADB_CONNECT_TEST
 ) else (
 	ECHO [ATT] Manually connect device and try again.
