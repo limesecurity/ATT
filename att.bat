@@ -251,7 +251,7 @@ IF NOT EXIST "%output_dir%\%targetapk%\java\*.jar" (
 	)
 	IF NOT EXIST "%output_dir%"\%targetapk%\java mkdir "%output_dir%"\%targetapk%\java
 	move classes*.jar "%output_dir%"\%targetapk%\java\
-	move classes*.zip "%output_dir%"\%targetapk%\java\
+	IF EXIST classes*.zip move classes*.zip "%output_dir%"\%targetapk%\java\
 	ECHO [ATT] Output: "%output_dir%"\%targetapk%\java\%targetapk%.jar
 )
 "%ext-tools_dir%\jd-gui\jd-gui.exe" "%output_dir%"\%targetapk%\java\*.jar
