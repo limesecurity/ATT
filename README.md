@@ -1,4 +1,4 @@
-# ATT
+# ATT (Apk testing tool)
 Small and compact apk manager tool.
 
 apk 파일의 검색 및 추출, 디코딩, 재컴파일, java 소스 보기, 사이닝, 인스톨 작업만 쉽게 처리할 수 있도록 만든 간단한 매니저 툴입니다.
