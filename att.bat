@@ -40,27 +40,31 @@ GOTO START
 :MENU
 mode con:cols=100 lines=1000
 CLS
-ECHO ------------------------------------------------------------------------------
-ECHO                        APK Testing Tool (Lime Security)
-ECHO ------------------------------------------------------------------------------
-ECHO                             VER 1.01 (2018-08-31)
-ECHO ------------------------------------------------------------------------------
+REM 污灰汍汐收早  仆  收  早 曳 朽 式 曳朵 此
 ECHO.
-ECHO 1. Search and Pull APK File with keyword
-ECHO. 
-ECHO 2. Decoding APK                      5. Build APK   
-ECHO 3. Decoding APK (no-res option)      6. Sign APK
-ECHO 4. View Java (With Jad-gui)          7. Install APK
-ECHO.
-ECHO 8. Build + Sign + Install APK
-ECHO.
-ECHO 9. Quit
-ECHO.
-ECHO -------------------------------------------------------------------------------
+ECHO 灰收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收汐
+ECHO 早                  APK Testing Tool (Lime Security)                        早
+ECHO 朵式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式此
+ECHO 早                             VER 1.01 (2018-08-31)                        早
+ECHO 曳收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收朽
+ECHO 早                                                                          早
+ECHO 早 1. Search and Pull APK File                                              早
+ECHO 早                                                                          早
+ECHO 早 2. Decoding APK                          5. Build APK                    早
+ECHO 早 3. Decoding APK (no-res option)          6. Sign APK                     早
+ECHO 早 4. View Java (With Jad-gui)              7. Install APK                  早
+ECHO 早                                                                          早
+ECHO 早 8. Encoding UNICODE to KOR (python)                                      早
+ECHO 早 9. Encoding KOR to UNICODE (python)                                      早
+ECHO 早                                                                          早
+ECHO 早 10. Build + Sign + Install APK                                           早
+ECHO 早 11. Quit                                                                 早
+ECHO 早                                                                          早
+ECHO 汍收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收收污
 SET /p workno=[ATT] SELECT NO: 
-GOTO START
 
 :START
+IF (%workno%)==() GOTO END
 IF %workno%==1 GOTO PACKAGES
 IF %workno%==2 GOTO SET_TARGET
 IF %workno%==3 GOTO SET_TARGET
@@ -68,9 +72,11 @@ IF %workno%==4 GOTO SET_TARGET
 IF %workno%==5 GOTO SET_TARGET
 IF %workno%==6 GOTO SET_TARGET
 IF %workno%==7 GOTO SET_TARGET
-IF %workno%==8 GOTO SET_TARGET
-IF %workno%==9 GOTO QUIT
-IF %workno%==10 GOTO HELP
+If %workno%==8 GOTO UnicodeToKOR
+If %workno%==9 GOTO KorToUnicode
+IF %workno%==10 GOTO SET_TARGET
+IF %workno%==11 GOTO QUIT
+IF %workno%==99 GOTO HELP
 GOTO END
 
 :SET_TARGET
@@ -275,18 +281,33 @@ GOTO END
 :ADB_CONNECT_TEST
 "%ext-tools_dir%\sdk-tools\adb" shell pwd 1>null
 IF errorlevel 1 (
-	ECHO [ATT] Can't connect device.
+	ECHO [ATT] No device found.
 ) else (
 	GOTO %CURRENT_WORK%
 )
 SET /p str=[ATT] Do you want trying 'adb kill-server'?[y/n]: 
+IF (%str%)==() GOTO END
 IF %str%==y (
 	"%ext-tools_dir%\sdk-tools\adb" kill-server
 	GOTO ADB_CONNECT_TEST
-) else (
+) ELSE (
 	ECHO [ATT] Manually connect device and try again.
 	GOTO END
 )
+
+:UnicodeToKOR
+ECHO [ATT] Enclose string in double quote, if string contain 'space'. 
+SET /p str=[ATT] UNICODE String: 
+If (%str%)==() GOTO END
+python "%ext-tools_dir%"\KorUnicode.py 1 %str%
+GOTO END
+
+:KorToUnicode
+ECHO [ATT] Enclose string in double quote, if string contain 'space'. 
+SET /p str=[ATT] KOR String: 
+If (%str%)==() GOTO END
+python "%ext-tools_dir%"\KorUnicode.py 2 %str%
+GOTO END
 
 :HELP
 ECHO APK file Testing Tool v1.01 (2018-08-30)
@@ -318,6 +339,7 @@ IF %mode%==menustyle (
 	ECHO.
 	SET /p str=[ATT] Press any key to continue....
 	SET str=
+	SET workno=
 	GOTO MENU
 )
 IF %mode%==linestyle GOTO QUIT
