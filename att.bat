@@ -13,16 +13,16 @@ REM 라인커맨드- 현재 디렉토리에서 작업, 메뉴모드- att 실행 디렉토리에서 작업
 :HEAD
 IF [%1]==[] (
 	SET mode=menustyle
-	SET source_dir=%att_dir%\source
-	SET output_dir=%att_dir%\output
-	SET ext-tools_dir=%att_dir%\ext-tools
+	SET source_dir="%att_dir%"\source
+	SET output_dir="%att_dir%"\output
+	SET ext-tools_dir="%att_dir%"\ext-tools
 	IF NOT EXIST !source_dir! MKDIR !source_dir!
 	GOTO MENU
 ) ELSE (
 	SET mode=linestyle
-	SET source_dir=%current_dir%
-	SET output_dir=%current_dir%\output
-	SET ext-tools_dir=%att_dir%\ext-tools
+	SET source_dir="%current_dir%"
+	SET output_dir="%current_dir%"\output
+	SET ext-tools_dir="%att_dir%"\ext-tools
 	GOTO LINE
 )
 
