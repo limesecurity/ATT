@@ -16,7 +16,7 @@ IF [%1]==[] (
 	SET source_dir=%att_dir%\source
 	SET output_dir=%att_dir%\output
 	SET ext-tools_dir=%att_dir%\ext-tools
-	IF NOT EXIST !source_dir! MKDIR !source_dir!
+	IF NOT EXIST "!source_dir!" MKDIR "!source_dir!"
 	GOTO MENU
 ) ELSE (
 	SET mode=linestyle
@@ -45,7 +45,7 @@ ECHO.
 ECHO 灰--------------------------------------------------------------------------汐
 ECHO 早                  APK Testing Tool (Lime Security)                        早
 ECHO 朵--------------------------------------------------------------------------此
-ECHO 早                             VER 1.01 (2018-08-31)                        早
+ECHO 早                             VER 1.10 (2018-09-17)                        早
 ECHO 曳--------------------------------------------------------------------------朽
 ECHO 早                                                                          早
 ECHO 早 1. Search and Pull APK File                                              早
@@ -130,7 +130,7 @@ IF NOT [%2]==[] (
 SET num=0
 ECHO [ATT] Searching packages with keyword '%searchkey%' ....
 ECHO.
-for /f "tokens=1,2,3 delims=:=" %%i in ('%ext-tools_dir%\sdk-tools\adb shell pm list packages -f') do (
+for /f "tokens=1,2,3 delims=:=" %%i in ('"%ext-tools_dir%\sdk-tools\adb" shell pm list packages -f') do (
 	echo %%k | findstr /C:%searchkey% 1>null
 	if errorlevel 1 (
 		REM
