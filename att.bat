@@ -125,8 +125,10 @@ GOTO ADB_CONNECT_TEST
 IF NOT [%2]==[] (
 	SET searchkey=%2
 ) ELSE (
+	SET searchkey=
 	SET /p searchkey=[ATT] Input keyword to search packeages : 
-)	
+)
+IF (%searchkey%)==() GOTO END
 SET num=0
 ECHO [ATT] Searching packages with keyword '%searchkey%' ....
 ECHO.
@@ -258,7 +260,7 @@ IF NOT EXIST "%output_dir%\%targetapk%\java\*.jar" (
 	IF NOT EXIST "%output_dir%"\%targetapk%\java mkdir "%output_dir%"\%targetapk%\java
 	move classes*.jar "%output_dir%"\%targetapk%\java\
 	IF EXIST classes*.zip move classes*.zip "%output_dir%"\%targetapk%\java\
-	ECHO [ATT] Output: "%output_dir%"\%targetapk%\java\%targetapk%.jar
+	ECHO [ATT] Output: "%output_dir%"\%targetapk%\java\
 )
 "%ext-tools_dir%\jd-gui\jd-gui.exe" "%output_dir%"\%targetapk%\java\*.jar
 ECHO [ATT] Execute jd-gui.exe.
