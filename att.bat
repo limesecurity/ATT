@@ -113,7 +113,7 @@ IF %workno%==4 GOTO JAVA_SOURCE
 IF %workno%==5 GOTO BUILD
 IF %workno%==6 GOTO SIGN
 IF %workno%==7 GOTO INSTALL
-IF %workno%==8 GOTO INSTALL_2
+IF %workno%==10 GOTO INSTALL_ALL
 GOTO END
 
 
@@ -267,7 +267,7 @@ ECHO [ATT] Execute jd-gui.exe.
 GOTO END
 
 
-:INSTALL_2
+:INSTALL_ALL
 ECHO.
 ECHO [ATT] Building %targetapk%...
 java -jar "%ext-tools_dir%\apktool\apktool.jar" b "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ --force
