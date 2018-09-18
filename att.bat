@@ -34,7 +34,7 @@ IF %1==j SET workno=4
 IF %1==b SET workno=5
 IF %1==s SET workno=6
 IF %1==i SET workno=7
-IF %1==h SET workno=10
+IF %1==h SET workno=99
 GOTO START
 
 :MENU
