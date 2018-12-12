@@ -378,11 +378,10 @@ REM if defined tmpstr goto :loop
 set appdir=/data/data/%targetapk:~0,-4%
 adb shell "ls -R %appdir%" | findstr ":" > dirlist.txt
 
-REM [참고]
-REM adb shell에서 받은 문자열은 리눅스에서 넘겨받은 스트링이므로 행 끝에 CR인 '0d'가 붙어서 나중에 문제를 일으킴
-REM 따라서 아래에서 맨 끝의 char를 잘라내는 작업을 수행해야함(--> !tmpstr:~0,-1!)
-REM 그러나 android 파일명에 공백이 있는 경우 token 7이 마지막 단어가 아니므로 마지막 char를 자르면 안됨
-REM 이 부분은 batch 파일로 처리하기 어려우며 일단 error.txt로 해당 내역을 로깅하는 것으로 마무리함
+REM [참고사항]
+REM 1. adb shell에서 받은 문자열은 리눅스에서 넘겨받은 스트링이므로 행 끝에 CR이 붙어서 나중에 문제를 일으키크로 마지막 char를 잘라주어야함
+REM (--> !tmpstr:~0,-1!)
+REM 2. android 파일명에 공백이 있는 경우 for문의 token 처리에서 문제가 발생 - 에러로 로깅
 for /f "tokens=1,2 delims=:" %%a in (dirlist.txt) do (
 	adb shell "ls -al %%a | grep ^-"> sub_filelist.txt
 	for /f "tokens=1,2,3,4,5,6,7,8 delims= " %%i in (sub_filelist.txt) do (
