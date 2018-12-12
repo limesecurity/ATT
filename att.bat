@@ -2,7 +2,7 @@
 SETLOCAL enabledelayedexpansion
 REM //////////////////////////////////////////////////////////////////////////////
 REM ///////////////////// APK Tesing Tool (LIME Security) ////////////////////////
-REM /////////////////////////// VER 1.10 (2018-08-31)) /////////////////////////////
+REM /////////////////////////// VER 1.12 (2018-12-12)) /////////////////////////////
 REM //////////////////////////////////////////////////////////////////////////////
 
 SET current_dir=%cd%
@@ -13,9 +13,9 @@ REM 라인커맨드- 현재 디렉토리에서 작업, 메뉴모드- att 실행 디렉토리에서 작업
 :HEAD
 IF [%1]==[] (
 	SET mode=menustyle
-	SET source_dir=%att_dir%\source
-	SET output_dir=%att_dir%\output
-	SET ext-tools_dir=%att_dir%\ext-tools
+	SET source_dir=%att_dir%source
+	SET output_dir=%att_dir%output
+	SET ext-tools_dir=%att_dir%ext-tools
 	IF NOT EXIST "!source_dir!" MKDIR "!source_dir!"
 	GOTO MENU
 ) ELSE (
@@ -45,7 +45,7 @@ ECHO.
 ECHO ┎--------------------------------------------------------------------------┒
 ECHO ┃                  APK Testing Tool (Lime Security)                        ┃
 ECHO ┠--------------------------------------------------------------------------┨
-ECHO ┃                             VER 1.10 (2018-09-17)                        ┃
+ECHO ┃                             VER 1.12 (2018-12-12)                        ┃
 ECHO ┣--------------------------------------------------------------------------┫
 ECHO ┃                                                                          ┃
 ECHO ┃ 1. Search and Pull APK File                                              ┃
@@ -58,7 +58,8 @@ ECHO ┃ 8. Encoding UNICODE to KOR (python)                                     
 ECHO ┃ 9. Encoding KOR to UNICODE (python)                                      ┃
 ECHO ┃                                                                          ┃
 ECHO ┃ 10. Build + Sign + Install APK                                           ┃
-ECHO ┃ 11. Quit                                                                 ┃
+ECHO ┃ 11. Extract all files from APP_DIR                                       ┃
+ECHO ┃ 12. Quit                                                                 ┃
 ECHO ┃                                                                          ┃
 ECHO ┖--------------------------------------------------------------------------┚
 SET /p workno=[ATT] SELECT NO: 
@@ -75,7 +76,8 @@ IF %workno%==7 GOTO SET_TARGET
 If %workno%==8 GOTO UnicodeToKOR
 If %workno%==9 GOTO KorToUnicode
 IF %workno%==10 GOTO SET_TARGET
-IF %workno%==11 GOTO QUIT
+IF %workno%==11 GOTO SET_TARGET
+IF %workno%==12 GOTO QUIT
 IF %workno%==99 GOTO HELP
 GOTO END
 
@@ -114,6 +116,7 @@ IF %workno%==5 GOTO BUILD
 IF %workno%==6 GOTO SIGN
 IF %workno%==7 GOTO INSTALL
 IF %workno%==10 GOTO INSTALL_ALL
+IF %workno%==11 GOTO PULL_APPDIR
 GOTO END
 
 
@@ -346,6 +349,75 @@ IF %mode%==menustyle (
 )
 IF %mode%==linestyle GOTO QUIT
 
+
+:PULL_APPDIR
+REM /////////////////////// PULL_APPDIR /////////////////////////////////
+SET CURRENT_WORK=PULL_APPDIR_2
+GOTO ADB_CONNECT_TEST
+
+:PULL_APPDIR_2
+IF not exist "%output_dir%\%targetapk%\APPDIR_files" (
+	mkdir "%output_dir%\%targetapk%\APPDIR_files"
+)
+echo [+] Wait.....
+
+REM set pname=
+REM set tmpstr=%targetapk%
+REM :loop
+REM for /f "tokens=1* delims=." %%a in ("%tmpstr%") do (
+REM 	set str=%%a
+REM 	set tmpstr=%%b
+REM )
+REM if (%pname%)==() (
+REM 	set pname=%str%
+REM ) else (
+REM 	if not %str%==apk set pname=%pname%.%str%
+REM )
+REM if defined tmpstr goto :loop
+
+set appdir=/data/data/%targetapk:~0,-4%
+adb shell "ls -R %appdir%" | findstr ":" > dirlist.txt
+
+REM [참고]
+REM adb shell에서 받은 문자열은 리눅스에서 넘겨받은 스트링이므로 행 끝에 CR인 '0d'가 붙어서 나중에 문제를 일으킴
+REM 따라서 아래에서 맨 끝의 char를 잘라내는 작업을 수행해야함(--> !tmpstr:~0,-1!)
+REM 그러나 android 파일명에 공백이 있는 경우 token 7이 마지막 단어가 아니므로 마지막 char를 자르면 안됨
+REM 이 부분은 batch 파일로 처리하기 어려우며 일단 error.txt로 해당 내역을 로깅하는 것으로 마무리함
+for /f "tokens=1,2 delims=:" %%a in (dirlist.txt) do (
+	adb shell "ls -al %%a | grep ^-"> sub_filelist.txt
+	for /f "tokens=1,2,3,4,5,6,7,8 delims= " %%i in (sub_filelist.txt) do (
+		if [%%o]==[] (
+			echo [Error: can't read Directory, Check manually] %%a>> .[ATT_log_error].txt
+			echo [Error: can't read Directory, Check manually] !tmpstr!>> .[ATT_log_filelist].txt
+		) else (
+			set tmpstr=%%a/%%o
+			if [%%p]==[] (
+				echo !tmpstr:~0,-1!>> .[ATT_log_filelist].txt
+			) else (
+				echo [Error: can't read File, Check manually] !tmpstr!>> .[ATT_log_filelist].txt
+				echo [Error: can't read File, Check manually] !tmpstr!>> .[ATT_log_error].txt
+			)
+		)
+	)
+)
+
+for /f "tokens=1* delims=" %%t in (filelist.txt) do (
+	set tmpstr=%%t
+	if not "!tmpstr:~0,1!"=="[" (
+		adb pull %%t "%output_dir%"\%targetapk%\APPDIR_files\
+	)
+)
+rem del dirlist.txt
+rem del sub_filelist.txt
+move .[ATT_log_filelist].txt "%output_dir%\%targetapk%\APPDIR_files\"
+if exist .[ATT_log_error].txt (
+	move .[ATT_log_error].txt "%output_dir%\%targetapk%\APPDIR_files\"
+	echo.
+	echo [ATT] Complete.
+	echo [ATT] Some error was found.
+	echo [ATT] Check log : %output_dir%\%targetapk%\APPDIR_files\.[ATT_log_error].txt
+)
+GOTO END
 
 :QUIT
 IF EXIST null del null
