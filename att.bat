@@ -285,7 +285,7 @@ IF %str%==y (
 
 
 :ADB_ROOT_TEST
-"%ext-tools_dir%\sdk-tools\adb" shell "ls /data/data" ! findstr /C:"Permission" > null
+"%ext-tools_dir%\sdk-tools\adb" shell "ls /data/data" | findstr /C:"Permission" > null
 if errorlevel 1 (
 	GOTO %CURRENT_WORK%
 ) ELSE (
@@ -363,12 +363,13 @@ GOTO %CURRENT_WORK%
 REM /////////////////////// PULL_APPDIR /////////////////////////////////
 SET CURRENT_WORK=PULL_APPDIR_2
 GOTO ADB_CONNECT_TEST
-
 :PULL_APPDIR_2
 SET CURRENT_WORK=PULL_APPDIR_3
 GOTO ADB_ROOT_TEST
-
 :PULL_APPDIR_3
+SET CURRENT_WORK=PULL_APPDIR_4
+GOTO SELECT_TARGET2
+:PULL_APPDIR_4
 IF not exist "%output_dir%\%targetapk%\APPDIR_files" (
 	mkdir "%output_dir%\%targetapk%\APPDIR_files"
 )
@@ -399,7 +400,7 @@ for /f "tokens=1,2 delims=:" %%a in (dirlist.txt) do (
 	)
 )
 
-for /f "tokens=1* delims=" %%t in (filelist.txt) do (
+for /f "tokens=1* delims=" %%t in (.[ATT_log_filelist].txt) do (
 	set tmpstr=%%t
 	if not "!tmpstr:~0,1!"=="[" (
 		adb pull %%t "%output_dir%"\%targetapk%\APPDIR_files\
