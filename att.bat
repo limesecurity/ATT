@@ -64,60 +64,23 @@ ECHO ┃                                                                         
 ECHO ┖--------------------------------------------------------------------------┚
 SET /p workno=[ATT] SELECT NO: 
 
+
 :START
 IF (%workno%)==() GOTO END
 IF %workno%==1 GOTO PACKAGES
-IF %workno%==2 GOTO SET_TARGET
-IF %workno%==3 GOTO SET_TARGET
-IF %workno%==4 GOTO SET_TARGET
-IF %workno%==5 GOTO SET_TARGET
-IF %workno%==6 GOTO SET_TARGET
-IF %workno%==7 GOTO SET_TARGET
-If %workno%==8 GOTO UnicodeToKOR
-If %workno%==9 GOTO KorToUnicode
-IF %workno%==10 GOTO SET_TARGET
-IF %workno%==11 GOTO SET_TARGET
-IF %workno%==12 GOTO QUIT
-IF %workno%==99 GOTO HELP
-IF %workno%==13 GOTO ADB_ROOT_TEST
-GOTO END
-
-:SET_TARGET
-IF NOT [%2]==[] (
-	SET targetapk=%2
-	GOTO GO_WORKING
-)
-:SELECT_TARGET
-cd "%source_dir%"
-set num=0
-for %%i in (*.apk) do (
-	set /a num=num+1
-	set flist[!num!]=%%i
-	echo [!num!] : %%i
-)
-if "%num%"=="0" (
-	ECHO [ATT] No target file...
-	GOTO END
-)
-ECHO.
-SET /p str=[ATT] Select Apk file : 
-IF %str% gtr %num% (
-	SET /p str=[ATT] Cancel? [y/n]: 
-	IF !str!==y (GOTO END) ELSE (GOTO SELECT_TARGET)
-)
-SET targetapk=!flist[%str%]!
-cd "%current_dir%"
-GOTO GO_WORKING
-
-:GO_WORKING
 IF %workno%==2 GOTO DECODE
 IF %workno%==3 GOTO DECODE_NO_RES
 IF %workno%==4 GOTO JAVA_SOURCE
 IF %workno%==5 GOTO BUILD
 IF %workno%==6 GOTO SIGN
 IF %workno%==7 GOTO INSTALL
+If %workno%==8 GOTO UnicodeToKOR
+If %workno%==9 GOTO KorToUnicode
 IF %workno%==10 GOTO INSTALL_ALL
 IF %workno%==11 GOTO PULL_APPDIR
+IF %workno%==12 GOTO QUIT
+IF %workno%==99 GOTO HELP
+IF %workno%==13 GOTO ADB_ROOT_TEST
 GOTO END
 
 
@@ -170,19 +133,20 @@ GOTO END
 
 :DECODE
 REM //////////////////////// DECODE //////////////////////////////////
-REM // CALL로 apktool.bat 를 호출할 경우 -Dfile.encoding=UTF8 세팅으로인해 cmd 창 폰트설정이 리셋되는 문제가 있어 해당 옵션을 빼고 jar를 직접 실행
-REM // 개발자가 원래 UTF8을 가정하고 apktool를 작성했을 것이므로 차후 인코딩 오류 이슈가 존재할 수도 있음
+REM // CALL로 apktool.bat 를 호출할 경우 -Dfile.encoding=UTF8 세팅으로인해 cmd 창 폰트설정이 리셋되는 문제가 있어 해당 옵션을 빼고 jar를 직접 실행 (원래 UTF8을 가정하고 apktool를 작성했을 것이므로 차후 인코딩 오류 이슈가 존재할 수도 있음)
+SET CURRENT_WORK=DECODE_2
+GOTO SELECT_TARGET2
+:DECODE_2
 IF exist "%output_dir%\%targetapk%\" (
 	ECHO [ATT] Old directory is exist. : %output_dir%\%targetapk%\
 	SET /p str=[ATT] Overwrite old directory?[y/n] : 
 	IF !str!==y (
-		ECHO [ATT] Deleting old directory... Please wait.
-		rmdir /s /q "%output_dir%\%targetapk%"
+		REM
 	) ELSE (
 		GOTO DECODE_END
 	)
 )
-java -jar "%ext-tools_dir%\apktool\apktool.jar" d "%source_dir%"\%targetapk% -o "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\
+java -jar "%ext-tools_dir%\apktool\apktool.jar" d "%source_dir%"\%targetapk% -o "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ -f
 if errorlevel 1 goto ERROR1
 ECHO [ATT] Output: %output_dir%\%targetapk%\
 :DECODE_END
@@ -191,6 +155,9 @@ GOTO END
 
 :DECODE_NO_RES
 REM ///////////////// DECODE with no-res option //////////////////////
+SET CURRENT_WORK=DECODE_NO_RES_2
+GOTO SELECT_TARGET2
+:DECODE_NO_RES_2
 IF exist "%output_dir%\%targetapk%\" (
 	ECHO [ATT] Old directory is exist. : %output_dir%\%targetapk%\
 	SET /p str=[ATT] Overwrite old directory?[y/n] : 
@@ -210,6 +177,9 @@ GOTO END
 
 :BUILD
 REM ///////////////////////// BUILD //////////////////////////////////
+SET CURRENT_WORK=BUILD_2
+GOTO SELECT_TARGET2
+:BUILD_2
 java -jar "%ext-tools_dir%\apktool\apktool.jar" b "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ --force
 if errorlevel 1 goto ERROR1
 ECHO [ATT] Output: %output_dir%\%targetapk%\dist\%targetapk%
@@ -218,6 +188,9 @@ GOTO END
 
 :SIGN
 REM ///////////////////////// SIGN ///////////////////////////////////
+SET CURRENT_WORK=SIGN_2
+GOTO SELECT_TARGET2
+:SIGN_2
 IF NOT EXIST "%output_dir%\%targetapk%\dist\%targetapk%" (
 	ECHO [ATT] No apk file.
 	GOTO END
@@ -234,6 +207,9 @@ REM //////////////////////// INSTALL /////////////////////////////////
 SET CURRENT_WORK=INSTALL_2
 GOTO ADB_CONNECT_TEST
 :INSTALL_2
+SET CURRENT_WORK=INSTALL_3
+GOTO SELECT_TARGET2
+:INSTALL_3
 IF NOT EXIST "%output_dir%"\%targetapk%\dist\signed-%targetapk% (
 	ECHO [ATT] No signed-apk file in build directory. Build and Sign apk file first.
 	GOTO END
@@ -245,6 +221,9 @@ GOTO END
 
 :JAVA_SOURCE
 REM /////////////////////// JAVA_SOURCE //////////////////////////////
+SET CURRENT_WORK=JAVA_SOURCE_2
+GOTO SELECT_TARGET2
+:JAVA_SOURCE_2
 IF NOT EXIST "%output_dir%\%targetapk%\java\*.jar" (
 	IF NOT EXIST "%output_dir%"\%targetapk%\build\apk\classes.dex (
 		ECHO [ATT] There is no classes.dex. You must build apk first.
@@ -252,7 +231,7 @@ IF NOT EXIST "%output_dir%\%targetapk%\java\*.jar" (
 		IF !str!==y (
 			java -jar "%ext-tools_dir%\apktool\apktool.jar" b "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ --force
 			if errorlevel 1 goto ERROR1
-			GOTO JAVA_SOURCE
+			GOTO JAVA_SOURCE_2
 		) ELSE (
 			GOTO END
 		)
@@ -272,6 +251,9 @@ GOTO END
 
 
 :INSTALL_ALL
+SET CURRENT_WORK=INSTALL_ALL_2
+GOTO SELECT_TARGET2
+:INSTALL_ALL_2
 ECHO.
 ECHO [ATT] Building %targetapk%...
 java -jar "%ext-tools_dir%\apktool\apktool.jar" b "%output_dir%"\%targetapk%\ -p "%output_dir%"\%targetapk%\framework\ --force
@@ -301,8 +283,8 @@ IF %str%==y (
 	GOTO END
 )
 
+
 :ADB_ROOT_TEST
-echo root test
 "%ext-tools_dir%\sdk-tools\adb" shell "ls /data/data" ! findstr /C:"Permission" > null
 if errorlevel 1 (
 	GOTO %CURRENT_WORK%
@@ -312,6 +294,7 @@ if errorlevel 1 (
 	GOTO END
 )
 
+
 :UnicodeToKOR
 ECHO [ATT] Enclose string in double quote, if string contain 'space'. 
 SET /p str=[ATT] UNICODE String: 
@@ -319,12 +302,14 @@ If (%str%)==() GOTO END
 python "%ext-tools_dir%"\KorUnicode.py 1 %str%
 GOTO END
 
+
 :KorToUnicode
 ECHO [ATT] Enclose string in double quote, if string contain 'space'. 
 SET /p str=[ATT] KOR String: 
 If (%str%)==() GOTO END
 python "%ext-tools_dir%"\KorUnicode.py 2 %str%
 GOTO END
+
 
 :HELP
 ECHO APK file Testing Tool v1.01 (2018-08-30)
@@ -347,25 +332,38 @@ ECHO     Use project name as target (=name of source apk file)
 GOTO END
 
 
-:ERROR1
-ECHO.
-ECHO [ATT] Error occured...
-
-:END
-IF %mode%==menustyle (
-	ECHO.
-	SET /p str=[ATT] Press any key to continue....
-	SET str=
-	SET workno=
-	GOTO MENU
+:SELECT_TARGET2
+IF NOT [%2]==[] (
+	SET targetapk=%2
+	GOTO %CURRENT_WORK%
 )
-IF %mode%==linestyle GOTO QUIT
+cd "%source_dir%"
+set num=0
+for %%i in (*.apk) do (
+	set /a num=num+1
+	set flist[!num!]=%%i
+	echo [!num!] : %%i
+)
+if "%num%"=="0" (
+	ECHO [ATT] No target file...
+	GOTO END
+)
+ECHO.
+SET /p str=[ATT] Select Apk file : 
+IF %str% gtr %num% (
+	SET /p str=[ATT] Cancel? [y/n]: 
+	IF !str!==y (GOTO END) ELSE (GOTO SELECT_TARGET)
+)
+SET targetapk=!flist[%str%]!
+cd "%current_dir%"
+GOTO %CURRENT_WORK%
 
 
 :PULL_APPDIR
 REM /////////////////////// PULL_APPDIR /////////////////////////////////
 SET CURRENT_WORK=PULL_APPDIR_2
 GOTO ADB_CONNECT_TEST
+
 :PULL_APPDIR_2
 SET CURRENT_WORK=PULL_APPDIR_3
 GOTO ADB_ROOT_TEST
@@ -418,6 +416,23 @@ if exist .[ATT_log_error].txt (
 	echo [ATT] Check log : %output_dir%\%targetapk%\APPDIR_files\.[ATT_log_error].txt
 )
 GOTO END
+
+
+:ERROR1
+ECHO.
+ECHO [ATT] Error occured...
+
+
+:END
+IF %mode%==menustyle (
+	ECHO.
+	SET /p str=[ATT] Press any key to continue....
+	SET str=
+	SET workno=
+	GOTO MENU
+)
+IF %mode%==linestyle GOTO QUIT
+
 
 :QUIT
 IF EXIST null del null
