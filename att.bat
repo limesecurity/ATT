@@ -54,11 +54,11 @@ ECHO ┃ 2. Decoding APK                          5. Build APK                   
 ECHO ┃ 3. Decoding APK (no-res option)          6. Sign APK                     ┃
 ECHO ┃ 4. View Java (With Jad-gui)              7. Install APK                  ┃
 ECHO ┃                                                                          ┃
-ECHO ┃ 8. Encoding UNICODE to KOR (python)                                      ┃
-ECHO ┃ 9. Encoding KOR to UNICODE (python)                                      ┃
+ECHO ┃ 8. Encoding UNICODE to KOR (python 3.x)                                  ┃
+ECHO ┃ 9. Encoding KOR to UNICODE (python 3.x)                                  ┃
 ECHO ┃                                                                          ┃
 ECHO ┃ 10. Build + Sign + Install APK                                           ┃
-ECHO ┃ 11. Extract all files from APP_DIR                                       ┃
+ECHO ┃ 11. Extract files from APP_DIR (VD only)                                 ┃
 ECHO ┃ 12. Quit                                                                 ┃
 ECHO ┃                                                                          ┃
 ECHO ┖--------------------------------------------------------------------------┚
@@ -79,6 +79,7 @@ IF %workno%==10 GOTO SET_TARGET
 IF %workno%==11 GOTO SET_TARGET
 IF %workno%==12 GOTO QUIT
 IF %workno%==99 GOTO HELP
+IF %workno%==13 GOTO ADB_ROOT_TEST
 GOTO END
 
 :SET_TARGET
@@ -300,6 +301,17 @@ IF %str%==y (
 	GOTO END
 )
 
+:ADB_ROOT_TEST
+echo root test
+"%ext-tools_dir%\sdk-tools\adb" shell "ls /data/data" ! findstr /C:"Permission" > null
+if errorlevel 1 (
+	GOTO %CURRENT_WORK%
+) ELSE (
+	ECHO [ATT] Permission denied.
+	ECHO [ATT] This command is only available in Virual Device.
+	GOTO END
+)
+
 :UnicodeToKOR
 ECHO [ATT] Enclose string in double quote, if string contain 'space'. 
 SET /p str=[ATT] UNICODE String: 
@@ -354,34 +366,23 @@ IF %mode%==linestyle GOTO QUIT
 REM /////////////////////// PULL_APPDIR /////////////////////////////////
 SET CURRENT_WORK=PULL_APPDIR_2
 GOTO ADB_CONNECT_TEST
-
 :PULL_APPDIR_2
+SET CURRENT_WORK=PULL_APPDIR_3
+GOTO ADB_ROOT_TEST
+
+:PULL_APPDIR_3
 IF not exist "%output_dir%\%targetapk%\APPDIR_files" (
 	mkdir "%output_dir%\%targetapk%\APPDIR_files"
 )
 echo [+] Wait.....
 
-REM set pname=
-REM set tmpstr=%targetapk%
-REM :loop
-REM for /f "tokens=1* delims=." %%a in ("%tmpstr%") do (
-REM 	set str=%%a
-REM 	set tmpstr=%%b
-REM )
-REM if (%pname%)==() (
-REM 	set pname=%str%
-REM ) else (
-REM 	if not %str%==apk set pname=%pname%.%str%
-REM )
-REM if defined tmpstr goto :loop
-
 set appdir=/data/data/%targetapk:~0,-4%
 adb shell "ls -R %appdir%" | findstr ":" > dirlist.txt
 
 REM [참고사항]
-REM 1. adb shell에서 받은 문자열은 리눅스에서 넘겨받은 스트링이므로 행 끝에 CR이 붙어서 나중에 문제를 일으키크로 마지막 char를 잘라주어야함
-REM (--> !tmpstr:~0,-1!)
-REM 2. android 파일명에 공백이 있는 경우 for문의 token 처리에서 문제가 발생 - 에러로 로깅
+REM 1. adb shell에서 받은 문자열은 리눅스 스트링이므로 행 끝에 CR이 붙어서 나중에 문제를 일으킴.
+REM    따라서 므로 마지막 글자를 잘라주어야함 (--> !tmpstr:~0,-1!)
+REM 2. android 파일명에 공백이 있는 경우 for문의 token 처리에서 문제가 발생 - error.log에 로깅
 for /f "tokens=1,2 delims=:" %%a in (dirlist.txt) do (
 	adb shell "ls -al %%a | grep ^-"> sub_filelist.txt
 	for /f "tokens=1,2,3,4,5,6,7,8 delims= " %%i in (sub_filelist.txt) do (
@@ -406,8 +407,8 @@ for /f "tokens=1* delims=" %%t in (filelist.txt) do (
 		adb pull %%t "%output_dir%"\%targetapk%\APPDIR_files\
 	)
 )
-rem del dirlist.txt
-rem del sub_filelist.txt
+del dirlist.txt
+del sub_filelist.txt
 move .[ATT_log_filelist].txt "%output_dir%\%targetapk%\APPDIR_files\"
 if exist .[ATT_log_error].txt (
 	move .[ATT_log_error].txt "%output_dir%\%targetapk%\APPDIR_files\"
