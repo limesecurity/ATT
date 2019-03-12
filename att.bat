@@ -8,8 +8,8 @@ REM ////////////////////////////////////////////////////////////////////////////
 SET current_dir=%cd%
 SET att_dir=%~dp0
 
-REM ¶óÀÎÄ¿¸ÇµåÀÎÁö or ¸Þ´º ¸ðµåÀÎÁö È®ÀÎ ÈÄ °æ·Î SET
-REM ¶óÀÎÄ¿¸Çµå- ÇöÀç µð·ºÅä¸®¿¡¼­ ÀÛ¾÷, ¸Þ´º¸ðµå- att ½ÇÇà µð·ºÅä¸®¿¡¼­ ÀÛ¾÷
+REM ë¼ì¸ì»¤ë§¨ë“œì¸ì§€ or ë©”ë‰´ ëª¨ë“œì¸ì§€ í™•ì¸ í›„ ê²½ë¡œ SET
+REM ë¼ì¸ì»¤ë§¨ë“œ- í˜„ìž¬ ë””ë ‰í† ë¦¬ì—ì„œ ìž‘ì—…, ë©”ë‰´ëª¨ë“œ- att ì‹¤í–‰ ë””ë ‰í† ë¦¬ì—ì„œ ìž‘ì—…
 :HEAD
 IF [%1]==[] (
 	SET mode=menustyle
@@ -34,34 +34,35 @@ IF %1==j SET workno=4
 IF %1==b SET workno=5
 IF %1==s SET workno=6
 IF %1==i SET workno=7
-IF %1==h SET workno=99
+IF %1==h SET workno=20
 GOTO START
 
 :MENU
 mode con:cols=100 lines=1000
 CLS
-REM ¦Ã¦Ç¦Å¦Á¦¬¦­  ¤²  ¦¬  ¦­ ¦² ¦´ ¦¡ ¦²¦· ¦¹
+REM â”šâ”Žâ”–â”’â”â”ƒ  ã…‚  â”  â”ƒ â”£ â”« â”€ â”£â”  â”¨
 ECHO.
-ECHO ¦Ç--------------------------------------------------------------------------¦Á
-ECHO ¦­                  APK Testing Tool (Lime Security)                        ¦­
-ECHO ¦·--------------------------------------------------------------------------¦¹
-ECHO ¦­                             VER 1.13 (2018-12-14)                        ¦­
-ECHO ¦²--------------------------------------------------------------------------¦´
-ECHO ¦­                                                                          ¦­
-ECHO ¦­ 1. Search and Pull APK File                                              ¦­
-ECHO ¦­                                                                          ¦­
-ECHO ¦­ 2. Decoding APK                          5. Build APK                    ¦­
-ECHO ¦­ 3. Decoding APK (no-res option)          6. Sign APK                     ¦­
-ECHO ¦­ 4. View Java (With Jad-gui)              7. Install APK                  ¦­
-ECHO ¦­                                                                          ¦­
-ECHO ¦­ 8. Encoding UNICODE to KOR (python 3.x)                                  ¦­
-ECHO ¦­ 9. Encoding KOR to UNICODE (python 3.x)                                  ¦­
-ECHO ¦­                                                                          ¦­
-ECHO ¦­ 10. Build + Sign + Install APK                                           ¦­
-ECHO ¦­ 11. Extract files from APP_DIR (VD only)                                 ¦­
-ECHO ¦­ 12. Quit                                                                 ¦­
-ECHO ¦­                                                                          ¦­
-ECHO ¦Å--------------------------------------------------------------------------¦Ã
+ECHO â”Ž--------------------------------------------------------------------------â”’
+ECHO â”ƒ                  APK Testing Tool (Lime Security)                        â”ƒ
+ECHO â” --------------------------------------------------------------------------â”¨
+ECHO â”ƒ                             VER 1.13 (2018-12-14)                        â”ƒ
+ECHO â”£--------------------------------------------------------------------------â”«
+ECHO â”ƒ                                                                          â”ƒ
+ECHO â”ƒ 1. Search and Pull APK File                                              â”ƒ
+ECHO â”ƒ                                                                          â”ƒ
+ECHO â”ƒ 2. Decoding APK                          5. Build APK                    â”ƒ
+ECHO â”ƒ 3. Decoding APK (no-res option)          6. Sign APK                     â”ƒ
+ECHO â”ƒ 4. View Java (With Jad-gui)              7. Install APK                  â”ƒ
+ECHO â”ƒ                                                                          â”ƒ
+ECHO â”ƒ 8. Encoding UNICODE to KOR (python 3.x)                                  â”ƒ
+ECHO â”ƒ 9. Encoding KOR to UNICODE (python 3.x)                                  â”ƒ
+ECHO â”ƒ                                                                          â”ƒ
+ECHO â”ƒ 10. Build + Sign + Install APK                                           â”ƒ
+ECHO â”ƒ 11. Extract files from APP_DIR (VD only)                                 â”ƒ
+ECHO â”ƒ 12. Extract files from APP_DIR (Chmod 664)                               â”ƒ
+ECHO â”ƒ 13. Quit                                                                 â”ƒ
+ECHO â”ƒ                                                                          â”ƒ
+ECHO â”–--------------------------------------------------------------------------â”š
 SET /p workno=[ATT] SELECT NO: 
 
 
@@ -78,9 +79,9 @@ If %workno%==8 GOTO UnicodeToKOR
 If %workno%==9 GOTO KorToUnicode
 IF %workno%==10 GOTO INSTALL_ALL
 IF %workno%==11 GOTO PULL_APPDIR
-IF %workno%==12 GOTO QUIT
-IF %workno%==99 GOTO HELP
-IF %workno%==13 GOTO ADB_ROOT_TEST
+IF %workno%==12 GOTO PULL_TEST
+IF %workno%==13 GOTO QUIT
+IF %workno%==20 GOTO HELP
 GOTO END
 
 
@@ -105,8 +106,8 @@ for /f "tokens=1,2,3 delims=:=" %%i in ('"%ext-tools_dir%\sdk-tools\adb" shell p
 		REM
 	) ELSE (
 		set /a num=num+1
-		set pfile[!num!]=%%j
-		set pname[!num!]=%%k
+		set pkgfile[!num!]=%%j
+		set pkgname[!num!]=%%k
 		echo [!num!] : %%j
 	)
 )
@@ -121,8 +122,8 @@ IF %str% gtr %num% (
 	SET /p str=[ATT] Cancel? [y/n]: 
 	IF !str!==y (GOTO END) ELSE (GOTO PACKAGES)
 )
-SET ori_apk=!pfile[%str%]!
-SET new_apk=!pname[%str%]!.apk
+SET ori_apk=!pkgfile[%str%]!
+SET new_apk=!pkgname[%str%]!.apk
 "%ext-tools_dir%\sdk-tools\adb" pull %ori_apk% "%source_dir%\%new_apk%"
 ECHO [ATT] Saved as: %source_dir%\%new_apk%
 
@@ -133,7 +134,7 @@ GOTO END
 
 :DECODE
 REM //////////////////////// DECODE //////////////////////////////////
-REM // CALL·Î apktool.bat ¸¦ È£ÃâÇÒ °æ¿ì -Dfile.encoding=UTF8 ¼¼ÆÃÀ¸·ÎÀÎÇØ cmd Ã¢ ÆùÆ®¼³Á¤ÀÌ ¸®¼ÂµÇ´Â ¹®Á¦°¡ ÀÖ¾î ÇØ´ç ¿É¼ÇÀ» »©°í jar¸¦ Á÷Á¢ ½ÇÇà (¿ø·¡ UTF8À» °¡Á¤ÇÏ°í apktool¸¦ ÀÛ¼ºÇßÀ» °ÍÀÌ¹Ç·Î Â÷ÈÄ ÀÎÄÚµù ¿À·ù ÀÌ½´°¡ Á¸ÀçÇÒ ¼öµµ ÀÖÀ½)
+REM // CALLë¡œ apktool.bat ë¥¼ í˜¸ì¶œí•  ê²½ìš° -Dfile.encoding=UTF8 ì„¸íŒ…ìœ¼ë¡œì¸í•´ cmd ì°½ í°íŠ¸ì„¤ì •ì´ ë¦¬ì…‹ë˜ëŠ” ë¬¸ì œê°€ ìžˆì–´ í•´ë‹¹ ì˜µì…˜ì„ ë¹¼ê³  jarë¥¼ ì§ì ‘ ì‹¤í–‰ (ì›ëž˜ UTF8ì„ ê°€ì •í•˜ê³  apktoolë¥¼ ìž‘ì„±í–ˆì„ ê²ƒì´ë¯€ë¡œ ì°¨í›„ ì¸ì½”ë”© ì˜¤ë¥˜ ì´ìŠˆê°€ ì¡´ìž¬í•  ìˆ˜ë„ ìžˆìŒ)
 SET CURRENT_WORK=DECODE_2
 GOTO SELECT_TARGET2
 :DECODE_2
@@ -378,10 +379,10 @@ echo [+] Wait.....
 set appdir=/data/data/%targetapk:~0,-4%
 adb shell "ls -R %appdir%" | findstr ":" > dirlist.txt
 
-REM [Âü°í»çÇ×]
-REM 1. adb shell¿¡¼­ ¹ÞÀº ¹®ÀÚ¿­Àº ¸®´ª½º ½ºÆ®¸µÀÌ¹Ç·Î Çà ³¡¿¡ CRÀÌ ºÙ¾î¼­ ³ªÁß¿¡ ¹®Á¦¸¦ ÀÏÀ¸Å´.
-REM    µû¶ó¼­ ¹Ç·Î ¸¶Áö¸· ±ÛÀÚ¸¦ Àß¶óÁÖ¾î¾ßÇÔ (--> !tmpstr:~0,-1!)
-REM 2. android ÆÄÀÏ¸í¿¡ °ø¹éÀÌ ÀÖ´Â °æ¿ì for¹®ÀÇ token Ã³¸®¿¡¼­ ¹®Á¦°¡ ¹ß»ý - error.log¿¡ ·Î±ë
+REM [ì°¸ê³ ì‚¬í•­]
+REM 1. adb shellì—ì„œ ë°›ì€ ë¬¸ìžì—´ì€ ë¦¬ëˆ…ìŠ¤ ìŠ¤íŠ¸ë§ì´ë¯€ë¡œ í–‰ ëì— CRì´ ë¶™ì–´ì„œ ë‚˜ì¤‘ì— ë¬¸ì œë¥¼ ì¼ìœ¼í‚´.
+REM    ë”°ë¼ì„œ ë¯€ë¡œ ë§ˆì§€ë§‰ ê¸€ìžë¥¼ ìž˜ë¼ì£¼ì–´ì•¼í•¨ (--> !tmpstr:~0,-1!)
+REM 2. android íŒŒì¼ëª…ì— ê³µë°±ì´ ìžˆëŠ” ê²½ìš° forë¬¸ì˜ token ì²˜ë¦¬ì—ì„œ ë¬¸ì œê°€ ë°œìƒ - error.logì— ë¡œê¹…
 for /f "tokens=1,2 delims=:" %%a in (dirlist.txt) do (
 	adb shell "ls -al %%a | grep ^-"> sub_filelist.txt
 	for /f "tokens=1,2,3,4,5,6,7,8 delims= " %%i in (sub_filelist.txt) do (
@@ -417,6 +418,70 @@ if exist .[ATT_log_error].txt (
 	echo [ATT] Check log : %output_dir%\%targetapk%\APPDIR_files\.[ATT_log_error].txt
 )
 GOTO END
+
+
+:PULL_TEST
+REM /////////////////////// PULL_TEST /////////////////////////////////
+SET CURRENT_WORK=PULL_TEST_2
+GOTO ADB_CONNECT_TEST
+:PULL_TEST_2
+SET CURRENT_WORK=PULL_TEST_3
+REM GOTO ADB_ROOT_TEST
+:PULL_TEST_3
+SET CURRENT_WORK=PULL_TEST_4
+GOTO SELECT_TARGET2
+:PULL_TEST_4
+IF not exist "%output_dir%\%targetapk%\APPDIR_files" (
+	mkdir "%output_dir%\%targetapk%\APPDIR_files"
+)
+echo [+] Wait.....
+
+set appdir=/data/data/%targetapk:~0,-4%
+adb shell "su -c ls -R %appdir%" | findstr ":" > dirlist.txt
+
+REM [ì°¸ê³ ì‚¬í•­]
+REM 1. adb shellì—ì„œ ë°›ì€ ë¬¸ìžì—´ì€ ë¦¬ëˆ…ìŠ¤ ìŠ¤íŠ¸ë§ì´ë¯€ë¡œ í–‰ ëì— CRì´ ë¶™ì–´ì„œ ë‚˜ì¤‘ì— ë¬¸ì œë¥¼ ì¼ìœ¼í‚´.
+REM    ë”°ë¼ì„œ ë¯€ë¡œ ë§ˆì§€ë§‰ ê¸€ìžë¥¼ ìž˜ë¼ì£¼ì–´ì•¼í•¨ (--> !tmpstr:~0,-1!)
+REM 2. android íŒŒì¼ëª…ì— ê³µë°±ì´ ìžˆëŠ” ê²½ìš° forë¬¸ì˜ token ì²˜ë¦¬ì—ì„œ ë¬¸ì œê°€ ë°œìƒ - error.logì— ë¡œê¹…
+for /f "tokens=1,2 delims=:" %%a in (dirlist.txt) do (
+	adb shell "su -c chmod 775 %%a"
+	adb shell "su -c ls -al %%a | grep ^-"> sub_filelist.txt
+	for /f "tokens=1,2,3,4,5,6,7,8 delims= " %%i in (sub_filelist.txt) do (
+		if [%%o]==[] (
+			echo [Error: can't read Directory, Check manually] %%a>> .[ATT_log_error].txt
+			echo [Error: can't read Directory, Check manually] !tmpstr!>> .[ATT_log_filelist].txt
+		) else (
+			set tmpstr=%%a/%%o
+			if [%%p]==[] (
+				echo !tmpstr:~0,-1!>> .[ATT_log_filelist].txt
+			) else (
+				echo [Error: can't read File, Check manually] !tmpstr!>> .[ATT_log_filelist].txt
+				echo [Error: can't read File, Check manually] !tmpstr!>> .[ATT_log_error].txt
+			)
+		)
+	)
+)
+
+for /f "tokens=1* delims=" %%t in (.[ATT_log_filelist].txt) do (
+	set tmpstr=%%t
+	if not "!tmpstr:~0,1!"=="[" (
+		adb shell "su -c chmod 664 %%t"
+		adb pull %%t "%output_dir%"\%targetapk%\APPDIR_files\
+	)
+)
+del dirlist.txt
+del sub_filelist.txt
+move .[ATT_log_filelist].txt "%output_dir%\%targetapk%\APPDIR_files\"
+if exist .[ATT_log_error].txt (
+	move .[ATT_log_error].txt "%output_dir%\%targetapk%\APPDIR_files\"
+	echo.
+	echo [ATT] Complete.
+	echo [ATT] Some error was found.
+	echo [ATT] Check log : %output_dir%\%targetapk%\APPDIR_files\.[ATT_log_error].txt
+)
+GOTO END
+
+
 
 
 :ERROR1
